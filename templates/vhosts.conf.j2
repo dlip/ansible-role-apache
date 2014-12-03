@@ -6,8 +6,6 @@ DirectoryIndex index.php index.html
 {%- if vhost.ssl is defined and vhost.ssl%}
 <VirtualHost *:{{ apache_ssl_listen_port }}>
   SSLEngine on
-  SSLCertificateFile {{vhost.SSLCertificateFile}}
-  SSLCertificateKeyFile {{vhost.SSLCertificateKeyFile}}
   ServerName {{ vhost.servername }}
   DocumentRoot {{ vhost.documentroot }}
 {% if vhost.serveradmin is defined %}
@@ -20,7 +18,9 @@ DirectoryIndex index.php index.html
     Allow from all
   </Directory>
 {% if vhost.extra_parameters is defined %}
-  {{ vhost.extra_parameters }}
+  {% for parameter in vhost.extra_parameters %}
+  {{parameter}}
+  {% endfor %}
 {% endif %}
 </VirtualHost>
 {%- endif %}
@@ -38,7 +38,9 @@ DirectoryIndex index.php index.html
     Allow from all
   </Directory>
 {% if vhost.extra_parameters is defined %}
-  {{ vhost.extra_parameters }}
+  {% for parameter in vhost.extra_parameters %}
+  {{parameter}}
+  {% endfor %}
 {% endif %}
   {% if vhost.ssl_redirect is defined and vhost.ssl_redirect %}
   RewriteEngine On
