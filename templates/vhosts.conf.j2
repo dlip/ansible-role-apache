@@ -3,6 +3,28 @@ DirectoryIndex index.php index.html
 
 {# Set up VirtualHosts - servername and documentroot are required. #}
 {% for vhost in apache_vhosts %}
+{%- if vhost.ssl is defined and vhost.ssl%}
+<VirtualHost *:{{ apache_ssl_listen_port }}>
+  SSLEngine on
+  SSLCertificateFile {{vhost.SSLCertificateFile}}
+  SSLCertificateKeyFile {{vhost.SSLCertificateKeyFile}}
+  ServerName {{ vhost.servername }}
+  DocumentRoot {{ vhost.documentroot }}
+{% if vhost.serveradmin is defined %}
+  ServerAdmin {{ vhost.serveradmin }}
+{% endif %}
+  <Directory "{{ vhost.documentroot }}">
+    AllowOverride All
+    Options -Indexes FollowSymLinks
+    Order allow,deny
+    Allow from all
+  </Directory>
+{% if vhost.extra_parameters is defined %}
+  {{ vhost.extra_parameters }}
+{% endif %}
+</VirtualHost>
+{%- endif %}
+
 <VirtualHost *:{{ apache_listen_port }}>
   ServerName {{ vhost.servername }}
   DocumentRoot {{ vhost.documentroot }}
@@ -18,6 +40,11 @@ DirectoryIndex index.php index.html
 {% if vhost.extra_parameters is defined %}
   {{ vhost.extra_parameters }}
 {% endif %}
+  {% if vhost.ssl_redirect is defined and vhost.ssl_redirect %}
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+  {% endif %}
 </VirtualHost>
 
 {% endfor %}

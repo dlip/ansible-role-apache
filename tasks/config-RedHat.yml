@@ -15,4 +15,29 @@
     regexp: "^NameVirtualHost ",
     line: "NameVirtualHost *:{{ apache_listen_port }}"
   }
+  - {
+    regexp: "^ServerName ",
+    line: "ServerName {{ apache_servername }}"
+  }
   notify: restart apache
+
+- name: Configure Apache SSL (RedHat).
+  lineinfile: >
+    dest={{ apache_server_root }}/conf.d/ssl.conf
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+    state=present
+  with_items:
+  - {
+    regexp: "^Listen ",
+    line: "Listen {{ apache_ssl_listen_port }}"
+  }
+  - {
+    # Disable default virtualhost
+    regexp: "^<VirtualHost",
+    line: "<VirtualHost *:9999>"
+  }
+  - {
+    regexp: "^NameVirtualHost ",
+    line: "NameVirtualHost *:{{ apache_ssl_listen_port }}"
+  }
